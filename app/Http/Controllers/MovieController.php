@@ -7,6 +7,25 @@ use Illuminate\Http\Request;
 
 class MovieController extends Controller
 {
+    public function createMovie(Request $request)
+    {
+        $data = $request->validate([
+            'title' => 'required|string',
+            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_published' => 'boolean',
+            'genre_id' => 'required|exists:genres,id',
+        ]);
+
+        if ($request->hasFile('poster')) {
+            $data['poster'] = $request->file('poster')->store('movie_posters', 'public'); // Store image in 'movie_posters' directory
+        } else {
+            $data['poster'] = 'default.jpg'; // Set default image name
+        }
+
+        $movie = Movie::create($data);
+
+        return response()->json($movie, 201);
+    }
     /**
      * Display a listing of the resource.
      */

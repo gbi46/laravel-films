@@ -13,6 +13,7 @@ Route::get('/apis', function() {
 });
 
 Route::get('genres', [GenreController::class, 'index']);
+Route::post('/genres/{genre}/movies', [GenreController::class, 'createMovie']);
 Route::get('genres/{id}', [GenreController::class, 'show']);
 
 Route::get('movies', [MovieController::class, 'index']);

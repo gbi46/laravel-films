@@ -156,7 +156,7 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN'),
+    'domain' => env('SESSION_DOMAIN', 'laravel-films.projects1.online'),
 
     /*
     |--------------------------------------------------------------------------
