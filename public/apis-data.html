@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie API</title>
+</head>
+<body>
+    <h1>Genres</h1>
+    <ul id="genre-list"></ul>
+
+    <h1>Movies</h1>
+    <ul id="movie-list"></ul>
+
+    <script>
+        fetch('/genres')
+            .then(response => response.json())
+            .then(genres => {
+                const genreList = document.getElementById('genre-list');
+                genres.forEach(genre => {
+                    const li = document.createElement('li');
+                    li.textContent = genre.name;
+                    genreList.appendChild(li);
+                });
+            });
+
+        fetch('/movies')
+            .then(response => response.json())
+            .then(movies => {
+              const movieList = document.getElementById('movie-list');
+              movies.data.forEach(movie => { // Access the 'data' property of the paginated response
+                const li = document.createElement('li');
+                li.textContent = movie.title;
+                movieList.appendChild(li);
+              });
+            });
+    </script>
+</body>
+</html>
