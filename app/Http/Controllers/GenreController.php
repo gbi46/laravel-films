@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Genre;
 use Illuminate\Http\Request;
 
 class GenreController extends Controller
@@ -11,7 +12,16 @@ class GenreController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(Genre::all());
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
+    {
+        $genre = Genre::with('movies')->findOrFail($id);
+        return response()->json($genre);
     }
 
     /**
@@ -19,15 +29,13 @@ class GenreController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $data = $request->validate([
+            'name' => 'required|string|unique:genres,name',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+        $genre = Genre::create($data);
+
+        return response()->json($genre, 201); // 201 Created
     }
 
     /**
@@ -35,7 +43,15 @@ class GenreController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $genre = Genre::findOrFail($id);
+
+        $data = $request->validate([
+            'name' => 'string|unique:genres,name,'.$id,
+        ]);
+
+        $genre->update($data);
+
+        return response()->json($genre);
     }
 
     /**
@@ -43,6 +59,9 @@ class GenreController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $genre = Genre::findOrFail($id);
+        $genre->delete();
+
+        return response()->json(['message' => 'Genre deleted successfully'], 204); // 204 No Content
     }
 }
