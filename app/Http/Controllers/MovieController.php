@@ -3,17 +3,39 @@
 namespace App\Http\Controllers;
 
 use App\Models\Movie;
+use App\Models\Genre; // Genre Model importieren
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MovieController extends Controller
 {
-    public function createMovie(Request $request)
+    /**
+     * Display a listing of the movies.
+     */
+    public function index()
+    {
+        $movies = Movie::with('genres')->paginate(10);
+        return view('movies.index', compact('movies'));
+    }
+
+    /**
+     * Show the form for creating a new movie.
+     */
+    public function create()
+    {
+        $genres = Genre::all();
+        return view('movies.create', compact('genres'));
+    }
+
+    /**
+     * Store a newly created movie in storage.
+     */
+    public function store(Request $request)
     {
         $data = $request->validate([
             'title' => 'required|string',
-            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_published' => 'boolean',
-            'genre_id' => 'required|exists:genres,id',
+            'poster' => 'nullable|image',
+            'is_published' => 'boolean'
         ]);
 
         if ($request->hasFile('poster')) {
@@ -23,52 +45,32 @@ class MovieController extends Controller
         }
 
         $movie = Movie::create($data);
+        $movie->genres()->attach($request->genres);
 
-        return response()->json($movie, 201);
-    }
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        return response()->json(Movie::with('genres')->paginate(10));
+        return redirect()->route('movies.index')->with('success', 'Movie created successfully.');
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified movie.
      */
     public function show($id)
     {
         $movie = Movie::with('genres')->findOrFail($id);
-        return response()->json($movie);
+        return view('movies.show', compact('movie'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Show the form for editing the specified movie.
      */
-    public function store(Request $request)
+    public function edit($id)
     {
-        $data = $request->validate([
-            'title' => 'required|string',
-            'poster' => 'nullable|image',
-            'is_published' => 'boolean',
-            'genres' => 'array',
-        ]);
-
-        if ($request->hasFile('poster')) {
-            $data['poster'] = $request->file('poster')->store('posters', 'public');
-        } else {
-            $data['poster'] = 'default.jpg';
-        }
-
-        $movie = Movie::create($data);
-        $movie->genres()->attach($request->genres);
-
-        return response()->json($movie, 201);
+        $movie = Movie::findOrFail($id);
+        $genres = Genre::all();
+        return view('movies.edit', compact('movie', 'genres'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified movie in storage.
      */
     public function update(Request $request, $id)
     {
@@ -82,7 +84,7 @@ class MovieController extends Controller
 
         if ($request->hasFile('poster')) {
             Storage::delete($movie->poster);
-            $data['poster'] = $request->file('poster')->store('posters', 'public');
+            $data['poster'] = $request->file('poster')->store('movie_posters', 'public');
         }
 
         $movie->update($data);
@@ -90,20 +92,23 @@ class MovieController extends Controller
             $movie->genres()->sync($request->genres);
         }
 
-        return response()->json($movie);
+        return redirect()->route('movies.index')->with('success', 'Movie updated successfully.');
     }
 
+    /**
+     * Publish the specified movie.
+     */
     public function publish($id)
     {
         $movie = Movie::findOrFail($id);
         $movie->update(['is_published' => true]);
-        return response()->json(['message' => 'Фильм опубликован']);
+        return redirect()->route('movies.index')->with('success', 'Movie published successfully.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified movie from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
         $movie = Movie::findOrFail($id);
 
@@ -113,6 +118,6 @@ class MovieController extends Controller
 
         $movie->delete();
 
-        return response()->json(['message' => 'Movie deleted successfully'], 204);
+        return redirect()->route('movies.index')->with('success', 'Movie deleted successfully.');
     }
 }

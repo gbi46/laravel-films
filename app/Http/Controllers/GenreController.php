@@ -5,96 +5,122 @@ namespace App\Http\Controllers;
 use App\Models\Genre;
 use App\Models\Movie;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class GenreController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the genres.
      */
     public function index()
     {
-        return response()->json(Genre::all());
+        $genres = Genre::all();
+        return view('genres.index', compact('genres'));
     }
 
     /**
-     * Display the specified resource.
+     * Show the form for creating a new genre.
+     */
+    public function create()
+    {
+        return view('genres.create');
+    }
+
+    /**
+     * Store a newly created genre in storage.
+     */
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'name' => 'required|string|unique:genres,name',
+        ]);
+
+        Genre::create($validatedData);
+
+        return redirect()->route('genres.index')->with('success', 'Genre created successfully.');
+    }
+
+    /**
+     * Display the specified genre.
      */
     public function show($id)
     {
         $genre = Genre::with('movies')->findOrFail($id);
-        return response()->json($genre);
+        return view('genres.show', compact('genre'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Show the form for editing the specified genre.
      */
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|unique:genres,name',
-        ]);
-
-        $genre = Genre::create($data);
-
-        return response()->json($genre, 201); // 201 Created
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function edit($id)
     {
         $genre = Genre::findOrFail($id);
-
-        $data = $request->validate([
-            'name' => 'string|unique:genres,name,'.$id,
-        ]);
-
-        $genre->update($data);
-
-        return response()->json($genre);
+        return view('genres.edit', compact('genre'));
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Update the specified genre in storage.
      */
-    public function destroy(string $id)
+    public function update(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'name' => 'required|string|unique:genres,name,' . $id,
+        ]);
+
+        $genre = Genre::findOrFail($id);
+        $genre->update($validatedData);
+
+        return redirect()->route('genres.index')->with('success', 'Genre updated successfully.');
+    }
+
+    /**
+     * Remove the specified genre from storage.
+     */
+    public function destroy($id)
     {
         $genre = Genre::findOrFail($id);
         $genre->delete();
 
-        return response()->json(['message' => 'Genre deleted successfully'], 204); // 204 No Content
+        return redirect()->route('genres.index')->with('success', 'Genre deleted successfully.');
     }
 
     /**
-     * Create new movie
+     * Show the form for creating a new movie for the specified genre.
      */
-    public function createMovie(Request $request, $genreId)
-{
-    $genre = Genre::findOrFail($genreId);
-
-    $validatedData = $request->validate([
-        'title' => [
-            'required',
-            'string',
-        ],
-        'description' => 'nullable|string',
-        'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'is_published' => 'boolean',
-    ]);
-
-    if ($request->hasFile('poster')) {
-        $posterPath = $request->file('poster')->store('movie_posters', 'public');
-        $validatedData['poster'] = $posterPath;
-    } else {
-        $validatedData['poster'] = 'default.jpg';
+    public function createMovie($genreId)
+    {
+        $genre = Genre::findOrFail($genreId);
+        $genres = Genre::all();
+        return view('movies.create', compact('genre', 'genres'));
     }
 
-    $movie = new Movie($validatedData);
-    $movie->save();
+    /**
+     * Store a newly created movie for the specified genre.
+     */
+    public function storeMovie(Request $request, $genreId)
+    {
+        $genre = Genre::findOrFail($genreId);
 
-    $movie->genres()->attach($genre->id); 
+        $validatedData = $request->validate([
+            'title' => 'required|string',
+            'description' => 'nullable|string',
+            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_published' => 'boolean',
+        ]);
 
-    return response()->json($movie, 201);
-}
+        if ($request->hasFile('poster')) {
+            $posterPath = $request->file('poster')->store('movie_posters', 'public');
+            $validatedData['poster'] = $posterPath;
+        } else {
+            $validatedData['poster'] = 'default.jpg';
+        }
+
+        $movie = new Movie($validatedData);
+        $movie->save();
+
+        $movie->genres()->attach($genre->id);
+
+        return redirect()->route('genres.show', $genreId)->with('success', 'Movie created successfully.');
+    }
 }
