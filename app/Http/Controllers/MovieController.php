@@ -17,9 +17,9 @@ class MovieController extends Controller
         ]);
 
         if ($request->hasFile('poster')) {
-            $data['poster'] = $request->file('poster')->store('movie_posters', 'public'); // Store image in 'movie_posters' directory
+            $data['poster'] = $request->file('poster')->store('movie_posters', 'public');
         } else {
-            $data['poster'] = 'default.jpg'; // Set default image name
+            $data['poster'] = 'default.jpg';
         }
 
         $movie = Movie::create($data);
@@ -108,11 +108,11 @@ class MovieController extends Controller
         $movie = Movie::findOrFail($id);
 
         if ($movie->poster !== 'default.jpg' && Storage::exists('public/' . $movie->poster)) {
-            Storage::delete('public/' . $movie->poster); // Delete poster if it exists
+            Storage::delete('public/' . $movie->poster);
         }
 
         $movie->delete();
 
-        return response()->json(['message' => 'Movie deleted successfully'], 204); // 204 No Content is standard for delete
+        return response()->json(['message' => 'Movie deleted successfully'], 204);
     }
 }

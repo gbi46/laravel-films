@@ -15,8 +15,9 @@ class MovieSeeder extends Seeder
     public function run(): void
     {
         $movies = [
-            ['title' => 'Фильм 1', 'is_published' => true, 'poster' => 'default.jpg'],
-            ['title' => 'Фильм 2', 'is_published' => false, 'poster' => 'default.jpg']
+            ['title' => 'Фильм 1', 'is_published' => false, 'poster' => 'default.jpg'],
+            ['title' => 'Фильм 2', 'is_published' => false, 'poster' => 'default.jpg'],
+            ['title' => 'Фильм 3', 'is_published' => false, 'poster' => 'default.jpg']
         ];
 
         foreach ($movies as $data) {

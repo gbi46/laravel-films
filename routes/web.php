@@ -19,5 +19,7 @@ Route::get('genres/{id}', [GenreController::class, 'show']);
 Route::get('movies', [MovieController::class, 'index']);
 Route::get('movies/{id}', [MovieController::class, 'show']);
 Route::post('movies', [MovieController::class, 'store']);
+Route::post('movies/delete/{id}', [MovieController::class, 'destroy']);
 Route::patch('movies/{id}', [MovieController::class, 'update']);
 Route::patch('movies/{id}/publish', [MovieController::class, 'publish']);
+

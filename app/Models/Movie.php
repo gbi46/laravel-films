@@ -8,7 +8,7 @@ class Movie extends Model
     protected $fillable = ['title', 'is_published', 'poster'];
     
     public function genres()
-    {
-        return $this->belongsToMany(Genre::class, 'movie_genre');
-    }
+{
+    return $this->belongsToMany(Genre::class, 'movie_genre', 'movie_id', 'genre_id');
+}
 }

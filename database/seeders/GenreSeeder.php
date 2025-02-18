@@ -12,7 +12,7 @@ class GenreSeeder extends Seeder
      */
     public function run(): void
     {
-        $genres = ['Комедия', 'Драма', 'Боевик', 'Фантастика', 'Хоррор'];
+        $genres = ['Комедия', 'Драма', 'Боевик', 'Мелодрама', 'Фантастика', 'Хоррор'];
 
         foreach ($genres as $genre) {
             Genre::create(['name' => $genre]);
